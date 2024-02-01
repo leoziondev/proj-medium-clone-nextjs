@@ -1,8 +1,4 @@
-interface Props {
-    message: string | undefined
-}
-
-export default function FormErrorMessage({message}: Props) {
+export default function FormErrorMessage({message}: any) {
   return (
     <span className="italic text-xs text-red-500">{message}</span>
   )

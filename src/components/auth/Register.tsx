@@ -10,6 +10,10 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { TabsContent } from "../ui/tabs";
 import FormErrorMessage from '../common/FormErrorMessage';
+import axios from 'axios';
+import { REGISTER_URL } from '@/lib/ApiEndpoints';
+import { Loader2 } from 'lucide-react';
+import { toast } from "sonner"
 
 const signUpForm = z.object({
     name: z.string().min(6),
@@ -29,6 +33,7 @@ export default function Register() {
     const {
         register,
         handleSubmit,
+        setError,
         formState: { errors, isSubmitting }
     } = useForm<signUpForm>({
         resolver: zodResolver(signUpForm)
@@ -36,11 +41,26 @@ export default function Register() {
 
     const handleSignup = async (data: signUpForm) => {
 
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        await axios.post(REGISTER_URL, data, {
+            headers: {
+                Accept: 'application/json'
+            }
+        })
+        .then((res) => {
+            const response = res.data
 
-        console.log(data);
+            if (response?.status === 200) {
+                toast.success("Account created successfully!")
+            }
+        })
+        .catch((err) => {
+            if (err?.response?.data?.errors?.email) {
+                setError('email', { type: 'custom', message: err?.response?.data?.errors?.email[0] });
+            }
+        })
         
     }
+
   return (
     <TabsContent value="register">
         <Card className="border-none shadow-none">
@@ -90,7 +110,10 @@ export default function Register() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-end mt-4">
-                    <Button disabled={isSubmitting} type="submit">Create Account</Button>
+                    <Button disabled={isSubmitting} type="submit">
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Create Account
+                    </Button>
                 </CardFooter>
             </form>
         </Card>
